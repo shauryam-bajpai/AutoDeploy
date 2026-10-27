@@ -1,0 +1,25 @@
+{
+  "name": "autodeploy",
+  "version": "1.0.0",
+  "description": "A production-minded CI/CD demo with Node.js, Docker, GitHub Actions, and automated Linux deployment.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/app.js && node --check src/server.js && node --check public/app.js && node --check test/app.test.js",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-functions=80 --test-coverage-branches=80"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "4.22.3",
+    "helmet": "8.3.0"
+  },
+  "devDependencies": {
+    "supertest": "7.3.1"
+  },
+  "license": "MIT"
+}

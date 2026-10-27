@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AutoDeploy live CI/CD demonstration dashboard">
+    <title>AutoDeploy · Operations Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="AutoDeploy home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img"><path d="M6 17.5 2.5 14 6 10.5M18 6.5 21.5 10 18 13.5M14.5 3l-5 18"/></svg>
+          </span>
+          <span>Auto<span>Deploy</span></span>
+        </a>
+        <div class="topbar-meta">
+          <span class="environment"><span class="pulse-dot"></span>Production monitor</span>
+          <span class="clock" id="clock">--:--:--</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">LIVE DEPLOYMENT CONTROL CENTER</p>
+            <h1>Release confidence,<br><span>at a glance.</span></h1>
+            <p class="hero-description">A real-time view of application health and the automated path from source code to a verified container release.</p>
+            <div class="hero-actions">
+              <button class="primary-button" id="run-check" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+                Run system check
+              </button>
+              <a class="secondary-button" href="/health" target="_blank" rel="noreferrer">Open health JSON <span>↗</span></a>
+            </div>
+          </div>
+          <div class="health-orbit" aria-label="Current application status">
+            <div class="orbit-ring orbit-ring-one"></div>
+            <div class="orbit-ring orbit-ring-two"></div>
+            <div class="health-core" id="health-core">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>
+              <strong id="hero-status">Checking</strong>
+              <span>Application status</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="metric-grid" aria-label="Live application metrics">
+          <article class="metric-card">
+            <div class="metric-icon green"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14h4l2-7 4 12 2-5h4"/></svg></div>
+            <div><p>Response time</p><strong id="response-time">--</strong><span id="response-caption">Measuring endpoint</span></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon blue"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+            <div><p>Process uptime</p><strong id="uptime">--</strong><span>Since last release</span></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon purple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M19 9h3M2 15h3M19 15h3"/></svg></div>
+            <div><p>Memory usage</p><strong id="memory">--</strong><span>Resident set size</span></div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-icon amber"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div>
+            <div><p>Requests served</p><strong id="requests">--</strong><span>Current process</span></div>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel pipeline-panel">
+            <div class="panel-heading">
+              <div><p class="section-label">AUTOMATION</p><h2>Delivery workflow</h2></div>
+              <span class="panel-badge">Configured pipeline</span>
+            </div>
+            <p class="panel-intro">Every push follows the same repeatable path. A failure stops promotion; an unhealthy release triggers rollback.</p>
+            <div class="pipeline" aria-label="CI/CD pipeline stages">
+              <div class="pipeline-stage">
+                <span class="stage-number">01</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M6 3v12M18 9v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM18 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM9 6h4a5 5 0 0 1 5 5"/></svg></div><strong>Code push</strong><small>GitHub</small>
+              </div>
+              <div class="pipeline-connector"><span></span></div>
+              <div class="pipeline-stage">
+                <span class="stage-number">02</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><strong>Test</strong><small>Node.js</small>
+              </div>
+              <div class="pipeline-connector"><span></span></div>
+              <div class="pipeline-stage">
+                <span class="stage-number">03</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div><strong>Build</strong><small>Docker</small>
+              </div>
+              <div class="pipeline-connector"><span></span></div>
+              <div class="pipeline-stage">
+                <span class="stage-number">04</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M8 12h8"/></svg></div><strong>Publish</strong><small>Docker Hub</small>
+              </div>
+              <div class="pipeline-connector"><span></span></div>
+              <div class="pipeline-stage">
+                <span class="stage-number">05</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 3v13M7 8l5-5 5 5M5 21h14"/></svg></div><strong>Deploy</strong><small>Linux + SSH</small>
+              </div>
+              <div class="pipeline-connector"><span></span></div>
+              <div class="pipeline-stage active">
+                <span class="stage-number">06</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-3Z"/><path d="m8 12 3 3 5-6"/></svg></div><strong>Verify</strong><small>Health + rollback</small>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel verification-panel">
+            <div class="panel-heading">
+              <div><p class="section-label">REAL-TIME</p><h2>Live verification</h2></div>
+              <span class="last-checked" id="last-checked">Waiting…</span>
+            </div>
+            <div class="endpoint-list">
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><code>/health</code><span class="endpoint-state checking" id="health-state">Checking</span></div>
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><code>/ready</code><span class="endpoint-state checking" id="ready-state">Checking</span></div>
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><code>/api/info</code><span class="endpoint-state checking" id="info-state">Checking</span></div>
+            </div>
+            <div class="latency-heading"><span>Recent response latency</span><strong id="latency-value">-- ms</strong></div>
+            <div class="latency-chart" id="latency-chart" aria-label="Recent latency chart"></div>
+          </article>
+
+          <article class="panel runtime-panel">
+            <div class="panel-heading"><div><p class="section-label">RELEASE</p><h2>Runtime details</h2></div></div>
+            <dl class="runtime-list">
+              <div><dt>Application</dt><dd>AutoDeploy API</dd></div>
+              <div><dt>Release version</dt><dd><code id="version">--</code></dd></div>
+              <div><dt>Environment</dt><dd id="environment">--</dd></div>
+              <div><dt>Node runtime</dt><dd id="runtime">--</dd></div>
+              <div><dt>Container port</dt><dd>3000</dd></div>
+              <div><dt>Restart policy</dt><dd>unless-stopped</dd></div>
+            </dl>
+          </article>
+
+          <article class="panel activity-panel">
+            <div class="panel-heading">
+              <div><p class="section-label">OBSERVABILITY</p><h2>Check activity</h2></div>
+              <span class="live-label"><span></span>LIVE</span>
+            </div>
+            <div class="activity-list" id="activity-list" aria-live="polite">
+              <div class="empty-activity">Running the first system check…</div>
+            </div>
+          </article>
+        </section>
+
+        <section class="value-strip">
+          <div><span>01</span><p><strong>Repeatable</strong>Every release follows the same tested process.</p></div>
+          <div><span>02</span><p><strong>Traceable</strong>SHA tags connect deployed images to source commits.</p></div>
+          <div><span>03</span><p><strong>Recoverable</strong>Failed health checks automatically restore the old image.</p></div>
+        </section>
+      </main>
+
+      <footer><span>AutoDeploy · CI/CD demonstration environment</span><span>Auto-refreshes every 5 seconds</span></footer>
+    </div>
+  </body>
+</html>

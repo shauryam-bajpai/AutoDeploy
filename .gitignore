@@ -1,0 +1,9 @@
+node_modules/
+.npm-cache/
+.docker-local/
+coverage/
+.env
+*.log
+.DS_Store
+.idea/
+.vscode/

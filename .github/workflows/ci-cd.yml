@@ -1,0 +1,209 @@
+name: AutoDeploy CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autodeploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check JavaScript syntax
+        run: npm run check
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  container:
+    name: Build and smoke-test container
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build local test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: autodeploy:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify container health
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --detach --name autodeploy-smoke \
+            --publish 127.0.0.1:3000:3000 \
+            --env APP_VERSION="${GITHUB_SHA}" \
+            autodeploy:ci
+
+          trap 'docker logs autodeploy-smoke; docker rm --force autodeploy-smoke' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:3000/health | grep --quiet '"status":"healthy"'; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "Container did not become healthy" >&2
+          exit 1
+
+  publish:
+    name: Publish image to Docker Hub
+    if: >-
+      ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+          vars.ENABLE_DEPLOYMENT == 'true' }}
+    runs-on: ubuntu-latest
+    needs: container
+    timeout-minutes: 15
+    outputs:
+      image: ${{ steps.image.outputs.value }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set image reference
+        id: image
+        shell: bash
+        run: echo "value=${{ secrets.DOCKERHUB_USERNAME }}/autodeploy:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/autodeploy
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-,format=long
+
+      - name: Build and publish image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+
+  deploy:
+    name: Deploy to Linux server
+    if: >-
+      ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+          vars.ENABLE_DEPLOYMENT == 'true' }}
+    runs-on: ubuntu-latest
+    needs: publish
+    timeout-minutes: 10
+    environment:
+      name: production
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Copy deployment script
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT || 22 }}
+          source: scripts/deploy.sh
+          target: /tmp/autodeploy-release
+
+      - name: Deploy and verify release
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          IMAGE: ${{ needs.publish.outputs.image }}
+          APP_PORT: ${{ vars.APP_PORT || '3000' }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT || 22 }}
+          envs: IMAGE,APP_PORT,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
+          script_stop: true
+          script: |
+            set -eu
+            echo "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            chmod +x /tmp/autodeploy-release/scripts/deploy.sh
+            /tmp/autodeploy-release/scripts/deploy.sh "$IMAGE" autodeploy "$APP_PORT"
+            docker logout
+
+  notify-failure:
+    name: Notify on failure
+    if: >-
+      ${{ always() && !cancelled() && github.ref == 'refs/heads/main' &&
+          contains(join(needs.*.result, ','), 'failure') }}
+    runs-on: ubuntu-latest
+    needs: [test, container, publish, deploy]
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+        shell: bash
+        run: |
+          payload=$(jq -n \
+            --arg text "AutoDeploy failed for ${REPOSITORY} (${COMMIT_SHA:0:7}) by ${ACTOR}. https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}" \
+            '{text: $text}')
+          curl --fail --silent --show-error \
+            --header 'Content-Type: application/json' \
+            --data "$payload" \
+            "$SLACK_WEBHOOK_URL"
+
+      - name: Explain missing optional notification secret
+        if: env.SLACK_WEBHOOK_URL == ''
+        run: echo "Pipeline failed; add SLACK_WEBHOOK_URL to enable Slack alerts."
