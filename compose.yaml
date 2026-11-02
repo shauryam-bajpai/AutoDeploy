@@ -8,9 +8,12 @@ services:
       NODE_ENV: production
       PORT: 3000
       APP_VERSION: ${APP_VERSION:-local}
+      PIPELINE_STATUS_FILE: /app/.demo-state/pipeline-status.json
     ports:
       - "${APP_PORT:-3000}:3000"
     restart: unless-stopped
+    volumes:
+      - ./.demo-state:/app/.demo-state:ro
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s

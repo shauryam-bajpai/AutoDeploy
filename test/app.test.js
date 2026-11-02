@@ -63,6 +63,14 @@ describe('AutoDeploy API', () => {
     assert.equal(typeof response.body.processId, 'number');
   });
 
+  it('reports local demonstration pipeline state', async () => {
+    const response = await request(app).get('/api/pipeline').expect(200);
+
+    assert.match(response.headers['cache-control'], /no-store/);
+    assert.equal(typeof response.body.status, 'string');
+    assert.equal(response.body.stages.length, 6);
+  });
+
   it('reports readiness', async () => {
     const response = await request(app).get('/ready').expect(200);
 

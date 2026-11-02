@@ -71,33 +71,54 @@
           <article class="panel pipeline-panel">
             <div class="panel-heading">
               <div><p class="section-label">AUTOMATION</p><h2>Delivery workflow</h2></div>
-              <span class="panel-badge">Configured pipeline</span>
+              <span class="panel-badge" id="pipeline-badge">Ready for demo</span>
             </div>
-            <p class="panel-intro">Every push follows the same repeatable path. A failure stops promotion; an unhealthy release triggers rollback.</p>
+            <p class="panel-intro" id="pipeline-message">Run <code>npm.cmd run demo:prepare</code> to begin the guided demonstration.</p>
+            <div class="pipeline-overview">
+              <div class="progress-copy">
+                <span>Pipeline progress</span>
+                <strong id="pipeline-progress-label">0 of 6 stages</strong>
+              </div>
+              <div class="progress-track" role="progressbar" aria-label="Pipeline progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pipeline-progress">
+                <span id="pipeline-progress-fill"></span>
+              </div>
+              <span class="progress-percent" id="pipeline-progress-percent">0%</span>
+            </div>
+            <div class="command-strip" aria-label="Guided demonstration commands">
+              <div class="command-chip" data-demo-command="prepare"><span>01</span><div><strong>Prepare</strong><code>demo:prepare</code></div></div>
+              <div class="command-chip" data-demo-command="test"><span>02</span><div><strong>Test</strong><code>demo:test</code></div></div>
+              <div class="command-chip" data-demo-command="build"><span>03</span><div><strong>Build</strong><code>demo:build</code></div></div>
+              <div class="command-chip" data-demo-command="deploy"><span>04</span><div><strong>Deploy</strong><code>demo:deploy</code></div></div>
+              <div class="command-chip" data-demo-command="verify"><span>05</span><div><strong>Verify</strong><code>demo:verify</code></div></div>
+            </div>
             <div class="pipeline" aria-label="CI/CD pipeline stages">
-              <div class="pipeline-stage">
-                <span class="stage-number">01</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M6 3v12M18 9v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM18 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM9 6h4a5 5 0 0 1 5 5"/></svg></div><strong>Code push</strong><small>GitHub</small>
+              <div class="pipeline-stage" data-pipeline-stage="code">
+                <span class="stage-number">01</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M6 3v12M18 9v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM18 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM9 6h4a5 5 0 0 1 5 5"/></svg></div><strong>Code source</strong><small>Waiting</small>
               </div>
               <div class="pipeline-connector"><span></span></div>
-              <div class="pipeline-stage">
-                <span class="stage-number">02</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><strong>Test</strong><small>Node.js</small>
+              <div class="pipeline-stage" data-pipeline-stage="test">
+                <span class="stage-number">02</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><strong>Test</strong><small>Waiting</small>
               </div>
               <div class="pipeline-connector"><span></span></div>
-              <div class="pipeline-stage">
-                <span class="stage-number">03</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div><strong>Build</strong><small>Docker</small>
+              <div class="pipeline-stage" data-pipeline-stage="build">
+                <span class="stage-number">03</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div><strong>Build</strong><small>Waiting</small>
               </div>
               <div class="pipeline-connector"><span></span></div>
-              <div class="pipeline-stage">
-                <span class="stage-number">04</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M8 12h8"/></svg></div><strong>Publish</strong><small>Docker Hub</small>
+              <div class="pipeline-stage" data-pipeline-stage="publish">
+                <span class="stage-number">04</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M8 12h8"/></svg></div><strong>Publish</strong><small>Waiting</small>
               </div>
               <div class="pipeline-connector"><span></span></div>
-              <div class="pipeline-stage">
-                <span class="stage-number">05</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 3v13M7 8l5-5 5 5M5 21h14"/></svg></div><strong>Deploy</strong><small>Linux + SSH</small>
+              <div class="pipeline-stage" data-pipeline-stage="deploy">
+                <span class="stage-number">05</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 3v13M7 8l5-5 5 5M5 21h14"/></svg></div><strong>Deploy</strong><small>Waiting</small>
               </div>
               <div class="pipeline-connector"><span></span></div>
-              <div class="pipeline-stage active">
-                <span class="stage-number">06</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-3Z"/><path d="m8 12 3 3 5-6"/></svg></div><strong>Verify</strong><small>Health + rollback</small>
+              <div class="pipeline-stage" data-pipeline-stage="verify">
+                <span class="stage-number">06</span><div class="stage-icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-3Z"/><path d="m8 12 3 3 5-6"/></svg></div><strong>Verify</strong><small>Waiting</small>
               </div>
+            </div>
+            <div class="pipeline-console">
+              <div class="console-heading"><span><i></i><i></i><i></i></span><strong>Pipeline event stream</strong><code id="pipeline-run-id">No active run</code></div>
+              <div class="console-events" id="pipeline-events"><p><time>--:--:--</time><span>Waiting for the prepare command</span></p></div>
             </div>
           </article>
 

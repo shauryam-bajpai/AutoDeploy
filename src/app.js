@@ -1,9 +1,31 @@
 const express = require('express');
 const helmet = require('helmet');
+const fs = require('node:fs');
 const path = require('node:path');
 
 const app = express();
 let requestCount = 0;
+const pipelineStatusFile = process.env.PIPELINE_STATUS_FILE
+  || path.join(__dirname, '..', '.demo-state', 'pipeline-status.json');
+
+const emptyPipelineStatus = {
+  schemaVersion: 2,
+  mode: 'guided-local-demo',
+  runId: null,
+  status: 'idle',
+  activeCommand: null,
+  nextCommand: 'prepare',
+  message: 'Start with npm.cmd run demo:prepare',
+  events: [],
+  stages: [
+    { id: 'code', status: 'pending', detail: 'Waiting' },
+    { id: 'test', status: 'pending', detail: 'Waiting' },
+    { id: 'build', status: 'pending', detail: 'Waiting' },
+    { id: 'publish', status: 'pending', detail: 'Waiting' },
+    { id: 'deploy', status: 'pending', detail: 'Waiting' },
+    { id: 'verify', status: 'pending', detail: 'Waiting' }
+  ]
+};
 
 app.disable('x-powered-by');
 app.use(helmet());
@@ -44,6 +66,20 @@ app.get('/api/metrics', (_request, response) => {
     },
     processId: process.pid
   });
+});
+
+app.get('/api/pipeline', (_request, response) => {
+  response.set('Cache-Control', 'no-store');
+
+  try {
+    const status = JSON.parse(fs.readFileSync(pipelineStatusFile, 'utf8'));
+    response.json(status);
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.error('Unable to read local pipeline status', error);
+    }
+    response.json(emptyPipelineStatus);
+  }
 });
 
 app.get('/health', (_request, response) => {

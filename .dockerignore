@@ -1,6 +1,8 @@
 .git
 .github
 .env
+.demo-state
+.npm-cache
 coverage
 node_modules
 npm-debug.log*

@@ -1,6 +1,7 @@
 node_modules/
 .npm-cache/
 .docker-local/
+.demo-state/
 coverage/
 .env
 *.log

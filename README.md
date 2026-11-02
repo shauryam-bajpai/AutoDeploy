@@ -73,8 +73,35 @@ Open <http://localhost:3000>. Useful endpoints are:
 | `GET /api` | Application and deployed-version metadata |
 | `GET /api/info` | Runtime and environment information |
 | `GET /api/metrics` | Live process uptime, memory, and request count |
+| `GET /api/pipeline` | Live guided demonstration pipeline state |
 | `GET /health` | Liveness/health probe |
 | `GET /ready` | Readiness probe |
+
+### Five-command presentation demo
+
+With Docker Desktop running, keep <http://localhost:3000> open and execute each command separately:
+
+```powershell
+npm.cmd run demo:prepare
+npm.cmd run demo:test
+npm.cmd run demo:build
+npm.cmd run demo:deploy
+npm.cmd run demo:verify
+```
+
+The dashboard preserves state between commands, highlights the next command, shows stage duration and progress, and records a live event stream. The commands perform real work:
+
+1. Prepare the dashboard and read the current Git commit.
+2. Run syntax checks and the coverage-enforced test suite.
+3. Build the production image and create an immutable local tag.
+4. Deploy a separate container at <http://localhost:3001>.
+5. Call its real health endpoint and mark the release verified.
+
+This guided mode needs no registry, Linux server, or secrets. The publish stage is explicitly identified as local packaging rather than Docker Hub publishing. The original one-command shortcut remains available as `npm.cmd run demo`. Stop and remove the demo deployment afterward with:
+
+```powershell
+npm.cmd run demo:stop
+```
 
 Run it with Docker instead:
 

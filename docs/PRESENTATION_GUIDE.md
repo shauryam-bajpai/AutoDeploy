@@ -45,6 +45,20 @@ AutoDeploy gives that team a lightweight delivery system:
 
 ## Recommended 7-minute demonstration
 
+### Guided five-command option
+
+For a classroom demonstration without Docker Hub, a remote server, or secrets, keep the dashboard open at <http://localhost:3000> and run these commands one at a time:
+
+```powershell
+npm.cmd run demo:prepare
+npm.cmd run demo:test
+npm.cmd run demo:build
+npm.cmd run demo:deploy
+npm.cmd run demo:verify
+```
+
+Pause after each command to explain the newly completed stages. The dashboard preserves progress, highlights the next command, displays an event stream, and finishes at 100%. Testing, the Docker build, local image tagging, deployment at <http://localhost:3001>, and `/health` verification are real. Describe publishing as **local packaging for demonstration**, not Docker Hub publishing. Clean up afterward with `npm.cmd run demo:stop`.
+
 ### 1. State the problem — 45 seconds
 
 Say:

@@ -7,7 +7,14 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "check": "node --check src/app.js && node --check src/server.js && node --check public/app.js && node --check test/app.test.js",
+    "demo": "node scripts/demo-pipeline.js",
+    "demo:prepare": "node scripts/demo-pipeline.js prepare",
+    "demo:test": "node scripts/demo-pipeline.js test",
+    "demo:build": "node scripts/demo-pipeline.js build",
+    "demo:deploy": "node scripts/demo-pipeline.js deploy",
+    "demo:verify": "node scripts/demo-pipeline.js verify",
+    "demo:stop": "node scripts/stop-demo.js",
+    "check": "node --check src/app.js && node --check src/server.js && node --check public/app.js && node --check scripts/demo-pipeline.js && node --check scripts/stop-demo.js && node --check test/app.test.js",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-functions=80 --test-coverage-branches=80"
   },
